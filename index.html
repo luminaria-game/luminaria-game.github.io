@@ -38,6 +38,10 @@ body {
 button { font-family: inherit; color: inherit; cursor: pointer; -webkit-appearance: none; appearance: none; }
 button:focus-visible, [tabindex]:focus-visible { outline: 3px solid var(--cyan); outline-offset: 2px; }
 img { max-width: 100%; -webkit-user-drag: none; }
+/* 長押しで端末のメニュー(共有・コピー・画像の保存・調べる)が出ないようにする。入力欄と部屋コードだけは除く */
+body { -webkit-touch-callout: none; }
+img { pointer-events: none; }
+input, textarea, .code-big { -webkit-touch-callout: default; }
 [hidden] { display: none !important; }
 
 #app { position: relative; height: 100%; overflow: hidden; isolation: isolate; }
@@ -4214,6 +4218,10 @@ L.Screens = {
     L.Eco.injectCSS();
     BG.init(); L.FX.init();
     L.$$('#nav button').forEach(b => b.addEventListener('click', () => { if (L.Screens.curName === b.dataset.go) return; L.Sound.play('tap'); L.Screens.go(b.dataset.go); }));
+    // 長押しで出る端末のメニュー(Android の右クリックメニューや iPhone の文字選択)を止める。入力欄と部屋コードは除く
+    const editable = t => t && t.closest && t.closest('input, textarea, .code-big');
+    document.addEventListener('contextmenu', e => { if (!editable(e.target)) e.preventDefault(); });
+    document.addEventListener('selectstart', e => { if (!editable(e.target.nodeType === 1 ? e.target : e.target.parentElement)) e.preventDefault(); });
     // 最初の操作で音を有効化(タイトル以外から入った場合の保険)
     const unlock = () => { L.Sound.init(); L.Music.flushPending(); };
     window.addEventListener('pointerdown', unlock, { once: true, capture: true });
